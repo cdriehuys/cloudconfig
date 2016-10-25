@@ -3,9 +3,22 @@ from io import BytesIO
 
 import boto3
 
+import yaml
+
 
 LOCAL_CONFIG_FILE = '.cloudconfigrc'
 LOCAL_CONFIG_SECTION = 'cloudconfig'
+
+
+class Config(object):
+
+    def get(self, key):
+        """Get the data with the given key"""
+        return self.config[key]
+
+    def load(self, raw_data):
+        """Parse YAML data"""
+        self.config = yaml.load(raw_data)
 
 
 def get_bucket_name(local_config):
@@ -51,7 +64,8 @@ def read_cloud_config(bucket_name, config_name):
 
     handle = BytesIO()
     s3.download_fileobj(bucket_name, config_name, handle)
-    print(handle.getvalue())
+
+    return handle.getvalue().decode('utf-8')
 
 
 if __name__ == '__main__':
@@ -60,4 +74,7 @@ if __name__ == '__main__':
     bucket_name = get_bucket_name(config)
     config_name = get_config_name(config)
 
-    print(read_cloud_config(bucket_name, config_name))
+    proj_conf = Config()
+    proj_conf.load(read_cloud_config(bucket_name, config_name))
+
+    print(proj_conf.get('foo'))
