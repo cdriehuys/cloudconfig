@@ -1,7 +1,10 @@
 import configparser
 from io import BytesIO
+import sys
 
 import boto3
+
+from botocore.exceptions import ClientError
 
 import yaml
 
@@ -83,7 +86,23 @@ def read_cloud_config(bucket_name, config_name):
         bytes:
             The content of the config file.
     """
-    s3 = boto3.client('s3')
+    s3 = boto3.resource('s3')
+
+    try:
+        s3.meta.client.head_bucket(Bucket=bucket_name)
+    except ClientError:
+        print("The bucket '{bucket}' does not exist. Exiting.".format(
+            bucket=bucket_name))
+
+        sys.exit(1)
+
+    try:
+        s3.meta.client.head_object(Bucket=bucket_name, Key=config_name)
+    except ClientError:
+        print("Can't find remote config, so it will be created on the next "
+              "save.")
+
+        return ''
 
     handle = BytesIO()
     s3.download_fileobj(bucket_name, config_name, handle)
