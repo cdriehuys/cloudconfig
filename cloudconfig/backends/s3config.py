@@ -64,8 +64,9 @@ class S3Config(BaseConfig):
 
             if error_code == 404:
                 self.logger.info("Could not read remote config file.")
-
                 self.data = {}
+
+                return
 
             self.logger.exception('Error reading remote config', exc_info=e)
 
