@@ -1,12 +1,4 @@
 import configparser
-from io import BytesIO
-import sys
-
-import boto3
-
-from botocore.exceptions import ClientError
-
-import yaml
 
 from cloudconfig.backends import S3Config
 
