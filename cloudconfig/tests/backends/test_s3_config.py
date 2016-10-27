@@ -40,7 +40,7 @@ class TestS3Config(object):
         assert conf._validate_bucket.call_count == 1
 
         assert isinstance(
-            conf.client,
+            conf.resource,
             boto3.resources.base.ServiceResource)
         assert conf.bucket_name == 'test-bucket'
         assert conf.config_name == 'test-config'
@@ -54,7 +54,7 @@ class TestS3Config(object):
         conf = S3Config('test-bucket', 'test-config')
         S3Config.load = self.load
 
-        conf.client.meta.client.head_object = mock.MagicMock(autospec=True)
+        conf.resource.meta.client.head_object = mock.MagicMock(autospec=True)
         conf.client.download_fileobj = mock.MagicMock(
             autospec=True,
             side_effect=mock_downloadobj)
@@ -63,9 +63,9 @@ class TestS3Config(object):
 
         assert result == 'foo: bar'
 
-        assert conf.client.meta.client.head_object.call_count == 1
+        assert conf.resource.meta.client.head_object.call_count == 1
 
-        _, kwargs = conf.client.meta.client.head_object.call_args
+        _, kwargs = conf.resource.meta.client.head_object.call_args
         assert kwargs['Bucket'] == conf.bucket_name
         assert kwargs['Key'] == conf.config_name
 
@@ -84,7 +84,7 @@ class TestS3Config(object):
         conf = S3Config('test-bucket', 'fake-config')
         S3Config.load = self.load
 
-        conf.client.meta.client.head_object = mock.MagicMock(
+        conf.resource.meta.client.head_object = mock.MagicMock(
             autospec=True,
             side_effect=ClientError({'Error': {'Code': 404}}, 'test op'))
         conf.client.download_fileobj = mock.MagicMock(autospec=True)
@@ -93,7 +93,7 @@ class TestS3Config(object):
 
         assert result == ''
 
-        assert conf.client.meta.client.head_object.call_count == 1
+        assert conf.resource.meta.client.head_object.call_count == 1
         assert conf.client.download_fileobj.call_count == 0
 
     def test_validate_bucket(self):
@@ -105,11 +105,11 @@ class TestS3Config(object):
         conf = S3Config('test-bucket', 'test-config')
         S3Config._validate_bucket = self._validate_bucket
 
-        conf.client.meta.client.head_bucket = mock.MagicMock(autospec=True)
+        conf.resource.meta.client.head_bucket = mock.MagicMock(autospec=True)
 
         conf._validate_bucket()
 
-        assert conf.client.meta.client.head_bucket.call_count == 1
+        assert conf.resource.meta.client.head_bucket.call_count == 1
 
     def test_validate_bucket_invalid(self):
         """Test validating an invalid bucket.
@@ -120,14 +120,14 @@ class TestS3Config(object):
         conf = S3Config('test-bucket', 'test-config')
         S3Config._validate_bucket = self._validate_bucket
 
-        conf.client.meta.client.head_bucket = mock.MagicMock(
+        conf.resource.meta.client.head_bucket = mock.MagicMock(
             autospec=True,
             side_effect=ClientError({'Error': {'Code': 403}}, 'test op'))
 
         with pytest.raises(ClientError):
             conf._validate_bucket()
 
-        assert conf.client.meta.client.head_bucket.call_count == 1
+        assert conf.resource.meta.client.head_bucket.call_count == 1
 
     def test_validate_bucket_not_found(self):
         """Test validating a bucket that returns a 404 error.
@@ -138,11 +138,11 @@ class TestS3Config(object):
         conf = S3Config('test-bucket', 'test-config')
         S3Config._validate_bucket = self._validate_bucket
 
-        conf.client.meta.client.head_bucket = mock.MagicMock(
+        conf.resource.meta.client.head_bucket = mock.MagicMock(
             autospec=True,
             side_effect=ClientError({'Error': {'Code': 404}}, 'test op'))
 
         with pytest.raises(BucketDoesNotExistException):
             conf._validate_bucket()
 
-        assert conf.client.meta.client.head_bucket.call_count == 1
+        assert conf.resource.meta.client.head_bucket.call_count == 1

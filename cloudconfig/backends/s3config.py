@@ -30,7 +30,8 @@ class S3Config(BaseConfig):
         self.config_name = config_name
         self.logger = logger or logging.getLogger(__name__)
 
-        self.client = boto3.resource('s3')
+        self.client = boto3.client('s3')
+        self.resource = boto3.resource('s3')
         self._validate_bucket()
 
         # Since bucket has been validated, we can attempt to load our data.
@@ -51,7 +52,7 @@ class S3Config(BaseConfig):
                 could not be opened, an empty string is returned.
         """
         try:
-            self.client.meta.client.head_object(
+            self.resource.meta.client.head_object(
                 Bucket=self.bucket_name,
                 Key=self.config_name)
         except ClientError as e:
@@ -71,7 +72,6 @@ class S3Config(BaseConfig):
             self.bucket_name,
             self.config_name,
             handle)
-        handle.seek(0)
 
         return handle.getvalue().decode('utf-8')
 
@@ -84,7 +84,7 @@ class S3Config(BaseConfig):
                 if the instance's bucket does not exist.
         """
         try:
-            self.client.meta.client.head_bucket(Bucket=self.bucket_name)
+            self.resource.meta.client.head_bucket(Bucket=self.bucket_name)
         except ClientError as e:
             error_code = int(e.response['Error']['Code'])
 
