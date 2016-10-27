@@ -4,6 +4,9 @@ from io import BytesIO
 import boto3
 from botocore.exceptions import ClientError
 
+import yaml
+
+
 from cloudconfig.backends import BaseConfig
 from cloudconfig.exceptions import BucketDoesNotExistException
 
@@ -61,7 +64,7 @@ class S3Config(BaseConfig):
             if error_code == 404:
                 self.logger.info("Could not read remote config file.")
 
-                return ''
+                self.data = {}
 
             self.logger.exception('Error reading remote config', exc_info=e)
 
@@ -73,7 +76,7 @@ class S3Config(BaseConfig):
             self.config_name,
             handle)
 
-        return handle.getvalue().decode('utf-8')
+        self.data = yaml.load(handle.getvalue().decode('utf-8'))
 
     def _validate_bucket(self):
         """

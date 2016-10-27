@@ -59,9 +59,9 @@ class TestS3Config(object):
             autospec=True,
             side_effect=mock_downloadobj)
 
-        result = conf.load()
+        conf.load()
 
-        assert result == 'foo: bar'
+        assert conf.data == {'foo': 'bar'}
 
         assert conf.resource.meta.client.head_object.call_count == 1
 
@@ -89,9 +89,9 @@ class TestS3Config(object):
             side_effect=ClientError({'Error': {'Code': 404}}, 'test op'))
         conf.client.download_fileobj = mock.MagicMock(autospec=True)
 
-        result = conf.load()
+        conf.load()
 
-        assert result == ''
+        assert conf.data == {}
 
         assert conf.resource.meta.client.head_object.call_count == 1
         assert conf.client.download_fileobj.call_count == 0
