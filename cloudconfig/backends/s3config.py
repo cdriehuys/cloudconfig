@@ -12,6 +12,7 @@ from cloudconfig.exceptions import BucketDoesNotExistException
 
 
 class S3Config(BaseConfig):
+    ENCODING = 'utf-8'
 
     def __init__(self, bucket_name, config_name, logger=None):
         """
@@ -77,6 +78,19 @@ class S3Config(BaseConfig):
             handle)
 
         self.data = yaml.load(handle.getvalue().decode('utf-8'))
+
+    def save(self):
+        """
+        Save the currently stored data to S3.
+        """
+        handle = BytesIO()
+        handle.write(yaml.dump(self.data).encode(self.ENCODING))
+        handle.seek(0)
+
+        self.client.upload_fileobj(
+            handle,
+            self.bucket_name,
+            self.config_name,)
 
     def _validate_bucket(self):
         """

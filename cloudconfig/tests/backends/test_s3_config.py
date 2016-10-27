@@ -1,6 +1,8 @@
+from io import BytesIO
 from unittest import mock
 
 import boto3
+import yaml
 from botocore.exceptions import ClientError
 
 import pytest
@@ -19,13 +21,16 @@ class TestS3Config(object):
     def setup_method(self):
         """Mock out bucket validation."""
         self.load = S3Config.load
+        self.save = S3Config.save
         self._validate_bucket = S3Config._validate_bucket
-        S3Config.load = mock.MagicMock(autospec=True, return_value='')
+        S3Config.load = mock.MagicMock(autospec=True)
+        S3Config.save = mock.MagicMock(autospec=True)
         S3Config._validate_bucket = mock.MagicMock(autospec=True)
 
     def teardown_method(self):
         """Restore mocked methods."""
         S3Config.load = self.load
+        S3Config.save = self.save
         S3Config._validate_bucket = self._validate_bucket
 
     def test_create(self):
@@ -95,6 +100,30 @@ class TestS3Config(object):
 
         assert conf.resource.meta.client.head_object.call_count == 1
         assert conf.client.download_fileobj.call_count == 0
+
+    def test_save(self):
+        """Test saving the config object.
+
+        Saving the object should upload its contents to S3.
+        """
+        conf = S3Config('test-bucket', 'test-config')
+        conf.data = {'foo': 'bar'}
+        S3Config.save = self.save
+
+        conf.client.upload_fileobj = mock.MagicMock(autospec=True)
+
+        conf.save()
+
+        assert conf.client.upload_fileobj.call_count == 1
+
+        args, _ = conf.client.upload_fileobj.call_args
+        assert args[1] == conf.bucket_name
+        assert args[2] == conf.config_name
+
+        expected_handle = BytesIO()
+        expected_handle.write(yaml.dump(conf.data).encode('utf-8'))
+
+        assert args[0].getvalue() == expected_handle.getvalue()
 
     def test_validate_bucket(self):
         """Test validating a bucket.
