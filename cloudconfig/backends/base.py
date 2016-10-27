@@ -27,15 +27,11 @@ class BaseConfig(object):
         """
         return self.data.get(key)
 
-    def load(self, data):
+    def load(self):
         """
-        Load the given data into the config instance.
+        Load the data for the given config instance.
 
         This should be implemented by the child class.
-
-        Args:
-            data (str):
-                The data to load.
         """
         warnings.warn('This method is not implemented in this backend.',
                       NotImplementedWarning)

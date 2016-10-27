@@ -45,7 +45,7 @@ class TestBaseConfig(object):
         conf = BaseConfig()
 
         with pytest.warns(NotImplementedWarning):
-            conf.load('foo')
+            conf.load()
 
     def test_save(self):
         """Test saving data with a BaseConfig instance.
