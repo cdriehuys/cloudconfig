@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 
 from cloudconfig.backends import BaseConfig
@@ -35,6 +37,20 @@ class TestBaseConfig(object):
         conf = BaseConfig()
 
         assert conf.get('foo') is None
+
+    def test_get_serializer(self):
+        """Test getting the serializer for the instance.
+
+        The method should return the `serializer_class` attribute of
+        the config class.
+        """
+        conf = BaseConfig()
+
+        with mock.patch.object(
+                conf, 'serializer_class') as mock_serializer:
+            serializer = conf.get_serializer()
+
+        assert serializer == mock_serializer
 
     def test_load(self):
         """Test loading data into a BaseConfig instance.

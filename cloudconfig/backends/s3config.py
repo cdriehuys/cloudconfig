@@ -78,14 +78,17 @@ class S3Config(BaseConfig):
             self.config_name,
             handle)
 
-        self.data = yaml.load(handle.getvalue().decode('utf-8'))
+        serializer = self.get_serializer()
+        self.data = serializer.deserialize(handle.getvalue().decode('utf-8'))
 
     def save(self):
         """
         Save the currently stored data to S3.
         """
+        serializer = self.get_serializer()
+
         handle = BytesIO()
-        handle.write(yaml.dump(self.data).encode(self.ENCODING))
+        handle.write(serializer.serialize(self.data).encode(self.ENCODING))
         handle.seek(0)
 
         self.client.upload_fileobj(

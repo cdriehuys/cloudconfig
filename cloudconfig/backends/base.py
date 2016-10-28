@@ -1,10 +1,13 @@
 import warnings
 
 from cloudconfig.exceptions import NotImplementedWarning
+from cloudconfig.serializers import BaseSerializer
+from cloudconfig.serializers import YAMLSerializer
 
 
 class BaseConfig(object):
     """The base for all configuration classes."""
+    serializer_class = YAMLSerializer       # type: BaseSerializer
 
     def __init__(self):
         """
@@ -26,6 +29,15 @@ class BaseConfig(object):
                 otherwise.
         """
         return self.data.get(key)
+
+    def get_serializer(self) -> BaseSerializer:
+        """
+        Get the serializer class to use for this config instance.
+
+        Returns:
+            The serializer class to use for the instance.
+        """
+        return self.serializer_class
 
     def load(self):
         """
