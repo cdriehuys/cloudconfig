@@ -38,6 +38,27 @@ class TestBaseConfig(object):
 
         assert conf.get('foo') is None
 
+    def test_get_nested(self):
+        """Test getting nested data.
+
+        By passing multiple arguments to the get method, we should be
+        able to retrieve nested data.
+        """
+        conf = BaseConfig()
+        conf.data = {'foo': {'bar': 'baz'}}
+
+        assert conf.get('foo', 'bar') == conf.data['foo']['bar']
+
+    def test_get_none(self):
+        """Test passing no key to `get`.
+
+        If no key is passed in, a `ValueError` should be raised.
+        """
+        conf = BaseConfig()
+
+        with pytest.raises(ValueError):
+            conf.get()
+
     def test_get_serializer(self):
         """Test getting the serializer for the instance.
 
