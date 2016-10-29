@@ -84,6 +84,28 @@ class TestBaseConfig(object):
         with pytest.warns(NotImplementedWarning):
             conf.load()
 
+    def test_magic_get(self):
+        """Test getting an item using python's magic methods.
+
+        This should allow access in the same way as passing the `get`
+        method 1 argument.
+        """
+        conf = BaseConfig()
+        conf.data = {'foo': 'bar'}
+
+        assert conf['foo'] == conf.data.get('foo')
+
+    def test_magic_get_missing(self):
+        """Test accessing a non-existent key.
+
+        If a non-existent key is accessed, a `KeyError` should be
+        raised.
+        """
+        conf = BaseConfig()
+
+        with pytest.raises(KeyError):
+            _ = conf['foo']
+
     def test_save(self):
         """Test saving data with a BaseConfig instance.
 
