@@ -16,6 +16,22 @@ class BaseConfig(object):
         """
         self.data = {}
 
+    def __getitem__(self, key):
+        """
+        Get the attribute at the given key.
+        Args:
+            key:
+                The key to retrieve data from.
+
+        Raises:
+            KeyError:
+                if there is no data at `key`.
+
+        Returns:
+            The data at `key`.
+        """
+        return self.data[key]
+
     def get(self, *keys: List[str]):
         """
         Get the data with the specified key.
